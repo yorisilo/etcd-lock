@@ -75,12 +75,24 @@ func main() {
 	}
 	defer client.Close()
 
-	resp, err := client.MemberList(context.TODO())
+	_, err = client.Put(context.TODO(), "/chapter3/key", "my-value")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, m := range resp.Members {
-		log.Printf("%s\n", m.String())
+	resp, err := client.Get(context.TODO(), "/chapter3/key")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if resp.Count == 0 {
+		log.Fatal("key /chapter3/key not found")
+	}
+
+	log.Printf(string(resp.Kvs[0].Value))
+
+	_, err = client.Delete(context.TODO(), "/chapter3/key")
+	if err != nil {
+		log.Fatal(err)
 	}
 }
