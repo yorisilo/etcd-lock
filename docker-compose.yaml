@@ -1,0 +1,81 @@
+version: "3"
+# networks:
+#   test_networkbridge:
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: 192.168.234.0/24
+# networks:
+#   test_network:
+#     driver: bridge
+#     driver_opts:
+#       com.docker.networks.enable_ipv6: "false"
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: 10.10.0.0/16
+#           gateway: 10.10.0.1
+services:
+  etcd1:
+    image: gcr.io/etcd-development/etcd:v3.4.7
+    # networks:
+    #   fixed_compose_network:
+    # networks:
+    #   test_network:
+    #     ipv4_address: 10.10.10.10
+    ports:
+      - "2379:2379"
+    command: >-
+      /usr/local/bin/etcd
+      -name etcd1
+      -data-dir /etcd-data
+      -initial-advertise-peer-urls http://etcd1:2380
+      -listen-peer-urls http://0.0.0.0:2380
+      -advertise-client-urls http://etcd1:2379
+      -listen-client-urls http://0.0.0.0:2379
+      -initial-cluster etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      -initial-cluster-token etcd-cluster
+      -initial-cluster-state new
+      -debug
+  etcd2:
+    image: gcr.io/etcd-development/etcd:v3.4.7
+    # networks:
+    #   fixed_compose_network:
+    # networks:
+    #   test_network:
+    #     ipv4_address: 10.10.10.11
+    ports:
+      - "12379:2379"
+    command: >-
+      /usr/local/bin/etcd
+      -name etcd2
+      -data-dir /etcd-data
+      -initial-advertise-peer-urls http://etcd2:2380
+      -listen-peer-urls http://0.0.0.0:2380
+      -advertise-client-urls http://etcd2:2379
+      -listen-client-urls http://0.0.0.0:2379
+      -initial-cluster etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      -initial-cluster-token etcd-cluster
+      -initial-cluster-state new
+      -debug
+  etcd3:
+    image: gcr.io/etcd-development/etcd:v3.4.7
+    # networks:
+    #   fixed_compose_network:
+    # networks:
+    #   test_network:
+    #     ipv4_address: 10.10.10.12
+    ports:
+      - "22379:2379"
+    command: >-
+      /usr/local/bin/etcd
+      -name etcd3
+      -data-dir /etcd-data
+      -initial-advertise-peer-urls http://etcd3:2380
+      -listen-peer-urls http://0.0.0.0:2380
+      -advertise-client-urls http://etcd3:2379
+      -listen-client-urls http://0.0.0.0:2379
+      -initial-cluster etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      -initial-cluster-token etcd-cluster
+      -initial-cluster-state new
+      -debug

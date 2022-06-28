@@ -1,0 +1,19 @@
+version: '2'
+
+networks:
+  test_network:
+    driver: bridge
+    driver_opts:
+      com.docker.networks.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.19.0/16
+          gateway: 192.168.19.1
+
+services:
+  test_container:
+    image: redis:alpine
+    networks:
+      test_network:
+        ipv4_address: 192.168.19.2
