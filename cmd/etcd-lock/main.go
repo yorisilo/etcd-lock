@@ -2,66 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
-
-// var (
-// 	endpoints = []string{"localhost:2379", "localhost:12379", "localhost:22379"}
-// )
-
-// const (
-// 	lockTTL      = 10 // second
-// 	lockResource = "/my-lock/"
-// )
-
-// func main() {
-// 	cli, err := clientv3.New(clientv3.Config{Endpoints: endpoints, DialTimeout: 3 * time.Second})
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer cli.Close()
-
-// 	rev, unlocker, err := Lock(context.Background(), cli, lockResource)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	// unlock
-// 	defer func() {
-// 		if err := unlocker(context.Background()); err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		log.Println("unlocked")
-// 	}()
-// 	log.Println("acquired lock rev:", rev)
-
-// 	// Some function that takes a long time to complete.
-// 	time.Sleep(5 * time.Second)
-// }
-
-// func Lock(ctx context.Context, cli *clientv3.Client, key string) (int64, func(context.Context) error, error) {
-// 	ss, err := concurrency.NewSession(cli, concurrency.WithTTL(lockTTL))
-// 	if err != nil {
-// 		return 0, nil, err
-// 	}
-// 	m := concurrency.NewMutex(ss, key)
-// 	// Orphan ends the refresh for the session lease.
-// 	ss.Orphan()
-
-// 	// acquire lock for ss
-// 	err = m.Lock(ctx)
-// 	// TryLock returns immediately if lock is held by another session.
-// 	//err = m.TryLock(ctx)
-// 	if err != nil {
-// 		return 0, nil, err
-// 	}
-
-// 	return m.Header().Revision, func(ctx context.Context) error {
-// 		return m.Unlock(ctx)
-// 	}, nil
-// }
 
 func main() {
 	cfg := clientv3.Config{
@@ -75,12 +21,24 @@ func main() {
 	}
 	defer client.Close()
 
-	_, err = client.Put(context.TODO(), "/chapter3/key", "my-value")
+	_, err = client.Put(context.TODO(), "/chapter3/option/key1", "my-value3")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = client.Put(context.TODO(), "/chapter3/option/key2", "my-value1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = client.Put(context.TODO(), "/chapter3/option/key3", "my-value2")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	resp, err := client.Get(context.TODO(), "/chapter3/key")
+	resp, err := client.Get(context.TODO(), "/chapter3/option/",
+		clientv3.WithPrefix(),
+		clientv3.WithSort(clientv3.SortByValue, clientv3.SortAscend),
+		clientv3.WithKeysOnly(),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,10 +47,23 @@ func main() {
 		log.Fatal("key /chapter3/key not found")
 	}
 
+	for _, kv := range resp.Kvs {
+		log.Printf("%s: %s\n", kv.Key, kv.Value)
+	}
+
 	log.Printf(string(resp.Kvs[0].Value))
 
 	_, err = client.Delete(context.TODO(), "/chapter3/key")
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func printResponse(resp *clientv3.GetResponse) {
+	fmt.Printf("header: %s\n", resp.Header.String())
+
+	for i, kv := range resp.Kvs {
+		fmt.Printf("kv[%d: %s\n]", i, kv.String())
+	}
+	fmt.Println()
 }
