@@ -8,6 +8,8 @@
 docker run で起動した etcd に対して、 docker run で起動した etcdctl を使って PUT する。
 
 - 0.0.0.0 で LISTEN してすべてのローカルIPに対して LISTEN を行うことで、どのインターフェースに対しても到達可能にする
+- port forward でホストとコンテナのポートをつなぐ
+
 ``` shell
 # etcd を起動
 (/ º﹃º)/ < docker run -i -t --rm -p 2379:2379 --volume=etcd-data:/etcd-data --name etcd gcr.io/etcd-development/etcd:v3.4.13 /usr/local/bin/etcd --name=etcd-1 --data-dir=/etcd-data --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
